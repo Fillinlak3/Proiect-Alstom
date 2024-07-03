@@ -89,41 +89,35 @@
 
             <!-- Turnover -->
             <Grid Grid.Column="2">
-                <Viewbox Stretch="Uniform" StretchDirection="DownOnly" Margin="10" >
-                    <Canvas Width="400" Height="300">
-                        <Rectangle x:Name="M_1" Width="140" Height="20" Fill="Gray" Canvas.Left="10" Canvas.Top="200"
+                <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+                    <Canvas Width="350" Height="350">
+                        <Rectangle x:Name="M_1" Width="140" Height="21" Fill="Gray" Canvas.Left="11"
+                                   Canvas.Top="199.5" Stroke="Black" StrokeThickness="1"/>
+
+                        <Polygon x:Name="M_2" Points="50,70 75,70 25,150 0,150" Fill="Gray" Stroke="Black"
+                                 StrokeThickness="1" Canvas.Left="214.5" Canvas.Top="24"/>
+                        
+                        <Rectangle x:Name="M_3" Width="80" Height="20" Fill="Gray" Canvas.Left="264"
+                                   Canvas.Top="200.5" Stroke="Black" StrokeThickness="1"/>
+
+                        <Rectangle x:Name="M_4" Width="40" Height="21" Fill="Gray" Canvas.Left="154" Canvas.Top="199.5"
                                    Stroke="Black" StrokeThickness="1"/>
 
-                        <Polygon x:Name="M_2" Points="50,50 75,50 25,150 0,150" Fill="Gray" Stroke="Black"
-                                 StrokeThickness="1" Canvas.Left="217" Canvas.Top="24"/>
-
-                        <Rectangle Visibility="Collapsed" Width="100" Height="20" Fill="Gray" Canvas.Left="170" Canvas.Top="180"/>
-
-                        <Rectangle x:Name="M_4" Width="40" Height="20" Fill="Gray" Canvas.Left="153" Canvas.Top="200"
-                                   Stroke="Black" StrokeThickness="1"/>
-
-                        <TextBlock Visibility="Collapsed" Text="12" FontSize="20" Foreground="White" Background="Gray" Canvas.Left="200" Canvas.Top="80" Width="30" Height="30" TextAlignment="Center" VerticalAlignment="Center"/>
-
-                        <Rectangle Visibility="Collapsed" Width="20" Height="40" Fill="Gray" Canvas.Left="170" Canvas.Top="140"/>
-
-                        <Polygon x:Name="M_7" Points="0,130 30,130 15,150 0,150" Fill="Gray" Stroke="Black"
+                        <TextBlock x:Name="M_5" Text="12" FontSize="20" Foreground="White" Background="Gray"
+                                   Canvas.Left="290" Canvas.Top="150" Width="30" Height="30"
+                                   TextAlignment="Center" VerticalAlignment="Center"/>
+                        
+                        <Polygon x:Name="M_7" Points="0,130 25,130 10,150 0,150" Fill="Gray" Stroke="Black"
                                  StrokeThickness="1" Canvas.Left="197" Canvas.Top="70"/>
 
                         <Polygon x:Name="M_8" Points="15,130 40,130 25,150 0,150" Fill="Gray" Stroke="Black" 
-                                 StrokeThickness="1" Canvas.Left="200" Canvas.Top="47"/>
+                                 StrokeThickness="1" Canvas.Left="198" Canvas.Top="47"/>
 
-                        <Polygon x:Name="M_9" Points="15,130 50,130 50,150 0,150" Fill="Gray" Stroke="Black"
-                                 StrokeThickness="1" Canvas.Left="217" Canvas.Top="70"/>
-
-                        <Rectangle x:Name="M_3" Width="80" Height="20" Fill="Gray" Canvas.Left="270" Canvas.Top="200"
-                                   Stroke="Black" StrokeThickness="1"/>
+                        <Polygon x:Name="M_9" Points="15,131 50,131 50,150 0,150" Fill="Gray" Stroke="Black"
+                                 StrokeThickness="1" Canvas.Left="211" Canvas.Top="70"/>
 
                         <Ellipse x:Name="M_10" Width="20" Height="20" Fill="Gray" Stroke="Black" StrokeThickness="1"
                                  Canvas.Left="310" Canvas.Top="230"/>
-
-                        <TextBlock x:Name="M_5" Text="12" FontSize="20" Foreground="White" Background="Gray"
-                                   Canvas.Left="310" Canvas.Top="130" Width="30" Height="30"
-                                   TextAlignment="Center" VerticalAlignment="Center"/>
                     </Canvas>
                 </Viewbox>
             </Grid>
