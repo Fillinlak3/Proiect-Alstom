@@ -27,59 +27,61 @@
         IXLState = Not IXLState
     End Sub
 
-    Private Sub BtnDirect(sender As Object, e As RoutedEventArgs)
+    Private Sub BttnOccupied(sender As Object, e As RoutedEventArgs)
         If IXLState = False Then
             MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
             Return
         End If
 
-        If Not TypeOf sender Is Button Then
+        If Not Turnout.IsOccupiedActive() Then
+            Turnout.Activate(Route.RouteStates.Occupied)
+            Turnout.SetDirect()
             Return
         End If
 
-        Dim btnName As String = DirectCast(sender, Button).Name
-        Dim routeState As Route.RouteStates
-        Select Case True
-            Case btnName.Contains("Occupied")
-                routeState = Route.RouteStates.Occupied
-            Case btnName.Contains("Traffic")
-                routeState = Route.RouteStates.Traffic
-            Case btnName.Contains("Shunting")
-                routeState = Route.RouteStates.Shunting
-            Case Else
-                routeState = Route.RouteStates.Inactive
-        End Select
-
-
-        Turnout.Activate(routeState)
-        Turnout.SetDirect()
+        Turnout.ChangeDirection()
     End Sub
 
-    Private Sub BtnDeviated(sender As Object, e As RoutedEventArgs)
+    Private Sub BttnTraffic(sender As Object, e As RoutedEventArgs)
         If IXLState = False Then
             MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
             Return
         End If
 
-        If Not TypeOf sender Is Button Then
+        If Not Turnout.IsTrafficActive() Then
+            Turnout.Activate(Route.RouteStates.Traffic)
+            Turnout.SetDirect()
             Return
         End If
 
-        Dim btnName As String = DirectCast(sender, Button).Name
-        Dim routeState As Route.RouteStates
-        Select Case True
-            Case btnName.Contains("Occupied")
-                routeState = Route.RouteStates.Occupied
-            Case btnName.Contains("Traffic")
-                routeState = Route.RouteStates.Traffic
-            Case btnName.Contains("Shunting")
-                routeState = Route.RouteStates.Shunting
-            Case Else
-                routeState = Route.RouteStates.Inactive
-        End Select
-
-
-        Turnout.Activate(routeState)
-        Turnout.SetDeviated()
+        Turnout.ChangeDirection()
     End Sub
+
+    Private Sub BttnShunting(sender As Object, e As RoutedEventArgs)
+        If IXLState = False Then
+            MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            Return
+        End If
+
+        If Not Turnout.IsShuntingActive() Then
+            Turnout.Activate(Route.RouteStates.Shunting)
+            Turnout.SetDirect()
+            Return
+        End If
+
+        Turnout.ChangeDirection()
+    End Sub
+
+    Private Sub BttnMMZ(sender As Object, e As RoutedEventArgs)
+        If Turnout.IsInterlockingActive() Then
+            Turnout.ChangeDirection()
+        End If
+    End Sub
+
+    Private Sub BttnMFMZ(sender As Object, e As RoutedEventArgs)
+        If Turnout.IsOccupiedActive() Then
+            Turnout.ChangeDirection()
+        End If
+    End Sub
+
 End Class

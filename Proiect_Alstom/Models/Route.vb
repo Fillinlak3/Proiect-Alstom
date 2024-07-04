@@ -1,5 +1,6 @@
 ﻿Public Class Route
     Private ReadOnly TurnoutSegments As New List(Of Object)()
+    Public RouteState As RouteStates
     Public Enum RouteStates
         Inactive = 0
         DefaultRoute
@@ -37,5 +38,8 @@
             Case RouteStates.Shunting
                 SetRouteColor(Colors.Blue)
         End Select
+
+        Me.RouteState = routeState
     End Sub
+
 End Class

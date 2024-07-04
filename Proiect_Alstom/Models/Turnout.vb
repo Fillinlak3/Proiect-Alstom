@@ -13,7 +13,7 @@ Public Class Turnout
     Dim RightBranch As Object
 
     Public Sub New(route As Route, lockingElement As Object, leftPositionIndicator As Object, rightPositionIndicator As Object,
-            leftBranch As Object, rightBranch As Object, staticPlusPosition As Object, turnoutName As Object)
+                   leftBranch As Object, rightBranch As Object, staticPlusPosition As Object, turnoutName As Object)
         Me.Route = route
         Me.StaticPlusPosition = staticPlusPosition
         Me.TurnoutName = turnoutName
@@ -52,14 +52,44 @@ Public Class Turnout
             routeState = RouteStates.DefaultRoute
         End If
 
+        ' Activate turnout name.
+        TurnoutName.Foreground = New SolidColorBrush(Colors.White)
         ' Set route and direction.
         Route.SetRoute(routeState)
         SetDirect()
     End Sub
 
     Public Sub Deactivate()
+        ' Activate turnout name.
+        TurnoutName.Foreground = New SolidColorBrush(Colors.Gray)
+        ' Set route to inactive.
         Route.SetRoute(Route.RouteStates.Inactive)
         LeftPositionIndicator.Visibility = Visibility.Visible
         RightPositionIndicator.Visibility = Visibility.Visible
     End Sub
+
+    Public Sub ChangeDirection()
+        If LeftPositionIndicator.Visibility = Visibility.Visible Then
+            SetDirect()
+        ElseIf RightPositionIndicator.Visibility = Visibility.Visible Then
+            SetDeviated()
+        End If
+    End Sub
+
+    Public Function IsInterlockingActive() As Boolean
+        Return Route.RouteState = Route.RouteStates.DefaultRoute
+    End Function
+
+    Public Function IsOccupiedActive() As Boolean
+        Return Route.RouteState = Route.RouteStates.Occupied
+    End Function
+
+    Public Function IsTrafficActive() As Boolean
+        Return Route.RouteState = Route.RouteStates.Traffic
+    End Function
+
+    Public Function IsShuntingActive() As Boolean
+        Return Route.RouteState = Route.RouteStates.Shunting
+    End Function
+
 End Class
