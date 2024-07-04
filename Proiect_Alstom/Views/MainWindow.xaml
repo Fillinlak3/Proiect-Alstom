@@ -21,8 +21,9 @@
             <!-- Left Grid -->
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="30*"/>
-                    <RowDefinition Height="70*"/>
+                    <RowDefinition Height="20*"/>
+                    <RowDefinition Height="40*"/>
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Upper Menu Grid -->
@@ -84,6 +85,32 @@
                     <Button Grid.Row="2" Grid.Column="2" Height="40" FontSize="14" FontWeight="SemiBold"
                             Margin="5" Content="AVG"/>
                 </Grid>
+                
+                <!-- Route Bttns Grd -->
+                <Grid Grid.Row="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                        <RowDefinition Height="auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Button x:Name="OccupiedDirect" Grid.Row="0" Grid.Column="0" Height="40" FontSize="14" FontWeight="SemiBold"
+                            Margin="5" Content="Occupied - Direct" Click="BtnDirect"/>
+                    <Button x:Name="OccupiedDeviated" Grid.Row="0" Grid.Column="1" Height="40" FontSize="14" FontWeight="SemiBold"
+                            Margin="5" Content="Occupied - Deviated" Click="BtnDeviated"/>
+                    <Button x:Name="TrafficDirect" Grid.Row="1" Grid.Column="0" Height="40" FontSize="14" FontWeight="SemiBold"
+                            Margin="5" Content="Traffic - Direct" Click="BtnDirect"/>
+                    <Button x:Name="TrafficDeviated" Grid.Row="1" Grid.Column="1" Height="40" FontSize="14" FontWeight="SemiBold"
+                            Margin="5" Content="Traffic - Deviated" Click="BtnDeviated"/>
+                    <Button x:Name="ShuntingDirect" Grid.Row="2" Grid.Column="0" Height="40" FontSize="14" FontWeight="SemiBold"
+                            Margin="5" Content="Shunting - Direct" Click="BtnDirect"/>
+                    <Button x:Name="ShuntingDeviated" Grid.Row="2" Grid.Column="1" Height="40" FontSize="14" FontWeight="SemiBold"
+                            Margin="5" Content="Shunting - Deviated" Click="BtnDeviated"/>
+                </Grid>
             </Grid>
 
             <Rectangle Grid.Column="1" Fill="Black"/>
@@ -91,7 +118,7 @@
             <!-- Turnover -->
             <Grid Grid.Column="2">
                 <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
-                    <Canvas Width="350" Height="350">
+                    <Canvas Width="350" Height="350" Background="Black">
                         <Rectangle x:Name="M_1" Width="140" Height="21" Fill="Gray" Canvas.Left="11"
                                    Canvas.Top="199.5" Stroke="Black" StrokeThickness="1"/>
 
@@ -117,7 +144,7 @@
                         <Polygon x:Name="M_9" Points="15,131 50,131 50,150 0,150" Fill="Gray" Stroke="Black"
                                  StrokeThickness="1" Canvas.Left="211" Canvas.Top="70"/>
 
-                        <Ellipse x:Name="M_10" Width="20" Height="20" Fill="Gray" Stroke="Black" StrokeThickness="1"
+                        <Ellipse x:Name="M_10" Width="20" Height="20" Fill="White" Stroke="Black" StrokeThickness="1"
                                  Canvas.Left="310" Canvas.Top="230"/>
                     </Canvas>
                 </Viewbox>

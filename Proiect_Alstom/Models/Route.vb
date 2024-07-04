@@ -5,7 +5,7 @@
         DefaultRoute
         Occupied
         Traffic
-        Chanting
+        Shunting
     End Enum
 
     Public Sub New(ParamArray turnoverSegments() As Object)
@@ -33,8 +33,8 @@
             Case RouteStates.Occupied
                 SetRouteColor(Colors.Red)
             Case RouteStates.Traffic
-                SetRouteColor(Colors.Green)
-            Case RouteStates.Chanting
+                SetRouteColor(Colors.Lime)
+            Case RouteStates.Shunting
                 SetRouteColor(Colors.Blue)
         End Select
     End Sub
