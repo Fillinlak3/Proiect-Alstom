@@ -12,6 +12,14 @@ Public Class Turnout
     Dim LeftBranch As Object
     Dim RightBranch As Object
 
+    Enum TrailingAnimationStates
+        Stopped
+        Both
+        Left
+        Right
+    End Enum
+    Private TrailingAnimationState As TrailingAnimationStates
+
     Public Sub New(route As Route, lockingElement As Object, leftPositionIndicator As Object, rightPositionIndicator As Object,
                    leftBranch As Object, rightBranch As Object, staticPlusPosition As Object, turnoutName As Object)
         Me.Route = route
@@ -23,6 +31,9 @@ Public Class Turnout
         Me.RightPositionIndicator = rightPositionIndicator
         Me.LeftBranch = leftBranch
         Me.RightBranch = rightBranch
+
+        TrailingAnimationTimer.Interval = 200
+        TrailingAnimationTimer.Enabled = False
     End Sub
 
     Public Sub SetDirect()
@@ -50,6 +61,10 @@ Public Class Turnout
     Public Sub Activate(Optional ByVal routeState As RouteStates = Nothing)
         If routeState = Nothing Then
             routeState = RouteStates.DefaultRoute
+        End If
+
+        If IsTrailingActive() Then
+            Me.TrailingAnimation(TrailingAnimationStates.Stopped)
         End If
 
         ' Activate turnout name.
@@ -91,5 +106,44 @@ Public Class Turnout
     Public Function IsShuntingActive() As Boolean
         Return Route.RouteState = Route.RouteStates.Shunting
     End Function
+
+    Public Function IsTrailingActive() As Boolean
+        Return Me.TrailingAnimationTimer.Enabled = True
+    End Function
+
+    Private Sub ChangeVisibility(control As Object)
+        If control Is Nothing Then
+            Throw New Exception("Cannot change visibility to a null object.")
+        End If
+
+        control.Visibility = If(control.Visibility = Visibility.Visible, Visibility.Collapsed, Visibility.Visible)
+    End Sub
+
+    Private WithEvents TrailingAnimationTimer As New System.Windows.Forms.Timer
+    Private Sub TrailAnimation_TimerElapsed(sender As Object, e As EventArgs) Handles TrailingAnimationTimer.Tick
+        Select Case Me.TrailingAnimationState
+            Case TrailingAnimationStates.Both
+                ChangeVisibility(LeftPositionIndicator)
+                ChangeVisibility(RightPositionIndicator)
+            Case TrailingAnimationStates.Left
+                ChangeVisibility(LeftPositionIndicator)
+        End Select
+    End Sub
+
+    Public Sub TrailingAnimation(trailingAnimationState As TrailingAnimationStates)
+        Me.TrailingAnimationState = trailingAnimationState
+
+        Select Case trailingAnimationState
+            Case TrailingAnimationStates.Stopped
+                Me.TrailingAnimationTimer.Enabled = False
+                SetDirect()
+            Case TrailingAnimationStates.Left
+                SetDeviated()
+            Case Else
+                LeftPositionIndicator.Visibility = Visibility.Visible
+                RightPositionIndicator.Visibility = Visibility.Visible
+                Me.TrailingAnimationTimer.Enabled = True
+        End Select
+    End Sub
 
 End Class

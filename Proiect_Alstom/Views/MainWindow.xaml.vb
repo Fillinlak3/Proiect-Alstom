@@ -21,6 +21,7 @@
         Else
             BTN_IXL_State.Background = New SolidColorBrush(Colors.Red)
             BTN_IXL_State.Content = "Inactive"
+            Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Stopped)
             Turnout.Deactivate()
         End If
 
@@ -73,15 +74,61 @@
     End Sub
 
     Private Sub BttnMMZ(sender As Object, e As RoutedEventArgs)
+        If IXLState = False Then
+            MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            Return
+        End If
+
         If Turnout.IsInterlockingActive() Then
             Turnout.ChangeDirection()
         End If
     End Sub
 
     Private Sub BttnMFMZ(sender As Object, e As RoutedEventArgs)
+        If IXLState = False Then
+            MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            Return
+        End If
+
         If Turnout.IsOccupiedActive() Then
             Turnout.ChangeDirection()
         End If
     End Sub
 
+    Dim _NeedTrailingStop As Boolean = False
+    Private Sub BttnMMZT(sender As Object, e As RoutedEventArgs)
+        If IXLState = False Then
+            MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            Return
+        End If
+
+        If Not Turnout.IsTrailingActive() Then
+            MessageBox.Show("The turnout is not trailed.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            Return
+        End If
+
+        If _NeedTrailingStop = True Then
+            Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Stopped)
+            _NeedTrailingStop = False
+            Return
+        End If
+
+        Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Left)
+        _NeedTrailingStop = True
+    End Sub
+
+    Private Sub BttnTrailed(sender As Object, e As RoutedEventArgs)
+        If IXLState = False Then
+            MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            Return
+        End If
+
+        If Turnout.IsTrailingActive() Then
+            MessageBox.Show("Trailing already active", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            Return
+        End If
+
+        Turnout.Activate(Route.RouteStates.DefaultRoute)
+        Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Both)
+    End Sub
 End Class
