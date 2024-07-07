@@ -49,6 +49,16 @@ Namespace ViewModels
             End Set
         End Property
 
+        Private _lockinRouteBttnCommand As RelayCommand
+        Public Property LockinRouteBttnCommand As RelayCommand
+            Get
+                Return _lockinRouteBttnCommand
+            End Get
+            Private Set(value As RelayCommand)
+                _lockinRouteBttnCommand = value
+            End Set
+        End Property
+
         Private _MMZBttnCommand As RelayCommand
         Public Property MMZBttnCommand As RelayCommand
             Get
@@ -105,6 +115,7 @@ Namespace ViewModels
             _trafficBttnCommand = New RelayCommand(AddressOf BttnTraffic)
             _shuntingBttnCommand = New RelayCommand(AddressOf BttnShunting)
             _trailedBttnCommand = New RelayCommand(AddressOf BttnTrailed)
+            _lockinRouteBttnCommand = New RelayCommand(AddressOf BttnLockinRoute)
 
             _MMZBttnCommand = New RelayCommand(AddressOf BttnMMZ)
             _MFMZBttnCommand = New RelayCommand(AddressOf BttnMFMZ)
@@ -168,6 +179,19 @@ Namespace ViewModels
 
             Turnout.Activate(Route.RouteStates.DefaultRoute)
             Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Both)
+        End Sub
+
+        Private Sub BttnLockinRoute(Optional parameter As Object = Nothing)
+            If IXLState = False Then
+                MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Not Turnout.IsRouteLocked() Then
+                Turnout.LockRoute()
+            Else
+                Turnout.UnlockRoute()
+            End If
         End Sub
 
         Private Sub BttnMMZ(Optional parameter As Object = Nothing)

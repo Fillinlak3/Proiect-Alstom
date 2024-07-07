@@ -39,8 +39,10 @@
         Public Sub SetDirect()
             ' SetDirect settings.
             LeftBranch.Fill = New SolidColorBrush(Colors.White)
-            LockingElement.Fill = New SolidColorBrush(Colors.White)
             LeftPositionIndicator.Visibility = Visibility.Collapsed
+            If Not Me.IsRouteLocked() Then
+                LockingElement.Fill = New SolidColorBrush(Colors.White)
+            End If
 
             ' Return from SetDeviated.
             RightBranch.Fill = LeftPositionIndicator.Fill
@@ -50,8 +52,10 @@
         Public Sub SetDeviated()
             ' SetDirect settings.
             RightBranch.Fill = New SolidColorBrush(Colors.White)
-            LockingElement.Fill = New SolidColorBrush(Colors.White)
             RightPositionIndicator.Visibility = Visibility.Collapsed
+            If Not Me.IsRouteLocked() Then
+                LockingElement.Fill = New SolidColorBrush(Colors.White)
+            End If
 
             ' Return from SetDirect.
             LeftBranch.Fill = LeftPositionIndicator.Fill
@@ -117,6 +121,8 @@
             Route.SetRoute(Route.RouteStates.Inactive)
             LeftPositionIndicator.Visibility = Visibility.Visible
             RightPositionIndicator.Visibility = Visibility.Visible
+            ' Also disable previous lock-in route
+            _isRouteLocked = False
         End Sub
 
 #Region "Checkings"
@@ -150,6 +156,10 @@
             Else
                 Return False
             End If
+        End Function
+
+        Public Function IsRouteLocked() As Boolean
+            Return _isRouteLocked
         End Function
 #End Region
 
@@ -188,6 +198,15 @@
             End Select
         End Sub
 
+        Private _isRouteLocked = False
+        Public Sub LockRoute()
+            LockingElement.Fill = LeftPositionIndicator.Fill
+            _isRouteLocked = True
+        End Sub
 
+        Public Sub UnlockRoute()
+            LockingElement.Fill = New SolidColorBrush(Colors.White)
+            _isRouteLocked = False
+        End Sub
     End Class
 End Namespace
