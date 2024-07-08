@@ -108,6 +108,36 @@ Namespace ViewModels
                 _DMMZBttnCommand = value
             End Set
         End Property
+
+        Private _BMZBttnCommand As RelayCommand
+        Public Property BMZBttnCommand As RelayCommand
+            Get
+                Return _BMZBttnCommand
+            End Get
+            Private Set(value As RelayCommand)
+                _BMZBttnCommand = value
+            End Set
+        End Property
+
+        Private _DMZBttnCommand As RelayCommand
+        Public Property DMZBttnCommand As RelayCommand
+            Get
+                Return _DMZBttnCommand
+            End Get
+            Private Set(value As RelayCommand)
+                _DMZBttnCommand = value
+            End Set
+        End Property
+
+        Private _FDMZBttnCommand As RelayCommand
+        Public Property FDMZBttnCommand As RelayCommand
+            Get
+                Return _FDMZBttnCommand
+            End Get
+            Private Set(value As RelayCommand)
+                _FDMZBttnCommand = value
+            End Set
+        End Property
 #End Region
 
         Public Sub New()
@@ -122,6 +152,19 @@ Namespace ViewModels
             _MMZTBttnCommand = New RelayCommand(AddressOf BttnMMZT)
             _BMMZBttnCommand = New RelayCommand(AddressOf BttnBMMZ)
             _DMMZBttnCommand = New RelayCommand(AddressOf BttnDMMZ)
+            _BMZBttnCommand = New RelayCommand(AddressOf BttnBMZ)
+            _DMZBttnCommand = New RelayCommand(AddressOf BttnDMZ)
+            _FDMZBttnCommand = New RelayCommand(AddressOf BttnFDMZ)
+        End Sub
+
+        Public Sub Reset()
+            _needToBeConfirmed = False
+            _NeedTrailingStop = False
+            _lockedInRoute = False
+
+            Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Stopped)
+            Turnout.ForcedUnlockRouteAnimation(Turnout.ForcedUnlockRouteAnimationStates.Stopped)
+            Turnout.Deactivate()
         End Sub
 
         Private Sub BttnOccupied(Optional parameter As Object = Nothing)
@@ -177,7 +220,11 @@ Namespace ViewModels
                 Return
             End If
 
-            Turnout.Activate(Route.RouteStates.DefaultRoute)
+            If Turnout.IsBlockedAgainstRoutes() Then
+                MessageBox.Show("Cannot trail while locked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
             Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Both)
         End Sub
 
@@ -187,6 +234,42 @@ Namespace ViewModels
                 Return
             End If
 
+            If Turnout.IsInterlockingActive() Then
+                MessageBox.Show("Cannot lock a default route.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            ' If trailing active, cannot lock route
+            If Turnout.IsTrailingActive() Then
+                MessageBox.Show("Cannot lock route while trailing.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            ' If route locked by FDMZ, then needs to be confirmed by
+            ' pressing Lock-in again to stop FDMZ animation
+            If _lockedInRoute = True Then
+                _lockedInRoute = False
+                _needToBeConfirmed = True
+                Turnout.LockRoute()
+                Return
+            ElseIf _needToBeConfirmed = True Then
+                _needToBeConfirmed = False
+                Turnout.UnlockRoute()
+                Turnout.ForcedUnlockRouteAnimation(Turnout.ForcedUnlockRouteAnimationStates.Stopped)
+                Return
+            End If
+
+            ' If BMZ active, cannot Lock-in. Only possible when FDMZ active.
+            If Turnout.IsBlockedAgainstRoutes() Then
+                If Turnout.IsRouteLocked() Then
+                    MessageBox.Show("Cannot unlock route while it's blocked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Else
+                    MessageBox.Show("Cannot lock route while it's blocked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                End If
+                Return
+            End If
+
+            ' Change lock state.
             If Not Turnout.IsRouteLocked() Then
                 Turnout.LockRoute()
             Else
@@ -265,6 +348,11 @@ Namespace ViewModels
                 Return
             End If
 
+            If Turnout.IsBlockedAgainstRoutes() Then
+                MessageBox.Show("Cannot block while locked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
             If Turnout.IsTurnoutDirectionBlocked() Then
                 MessageBox.Show("Direction is already blocked.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
                 Return
@@ -285,6 +373,66 @@ Namespace ViewModels
             End If
 
             Turnout.UnblockTurnoutDirection()
+        End Sub
+
+        Private Sub BttnBMZ(Optional parameter As Object = Nothing)
+            If IXLState = False Then
+                MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Turnout.IsRouteLocked() Then
+                MessageBox.Show("Cannot block. The route is locked.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Turnout.IsTrailingActive() Then
+                MessageBox.Show("Cannot block while trailing.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Turnout.IsBlockedAgainstRoutes() Then
+                MessageBox.Show("Already blocked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            Turnout.BlockAgainstRoutes()
+        End Sub
+
+        Private Sub BttnDMZ(Optional parameter As Object = Nothing)
+            If IXLState = False Then
+                MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Not Turnout.IsBlockedAgainstRoutes() Then
+                MessageBox.Show("Direction is not blocked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            Turnout.UnblockAgainstRoutes()
+        End Sub
+
+        Private _needToBeConfirmed = False
+        Private _lockedInRoute = False
+        Private Sub BttnFDMZ(Optional parameter As Object = Nothing)
+            If IXLState = False Then
+                MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Not Turnout.IsBlockedAgainstRoutes() Then
+                MessageBox.Show("The route is not blocked.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If _lockedInRoute = True OrElse _needToBeConfirmed = True Then
+                MessageBox.Show("The route was already forcefully unlocked. Awaiting lock-in for the route.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            Turnout.ForcedUnlockRouteAnimation(Turnout.ForcedUnlockRouteAnimationStates.All)
+            _lockedInRoute = True
         End Sub
     End Class
 End Namespace

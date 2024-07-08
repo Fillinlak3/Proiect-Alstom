@@ -18,8 +18,7 @@ Class MainWindow
         Else
             BTN_IXL_State.Background = New SolidColorBrush(Colors.Red)
             BTN_IXL_State.Content = "Inactive"
-            Program.Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Stopped)
-            Program.Turnout.Deactivate()
+            Program.Reset()
         End If
 
         Program.IXLState = Not Program.IXLState

@@ -11,6 +11,20 @@
         Dim LeftBranch As Object
         Dim RightBranch As Object
 
+        Enum Directions
+            Direct
+            Deviated
+        End Enum
+        Private _direction As Directions
+        Public Property Direction
+            Get
+                Return _direction
+            End Get
+            Private Set(value)
+                _direction = value
+            End Set
+        End Property
+
         Enum TrailingAnimationStates
             Stopped
             Both
@@ -18,6 +32,12 @@
             Right
         End Enum
         Private TrailingAnimationState As TrailingAnimationStates
+
+        Enum ForcedUnlockRouteAnimationStates
+            Stopped
+            All
+        End Enum
+        Private ForcedUnlockRouteAnimationState As ForcedUnlockRouteAnimationStates
 
         Public Sub New(route As Route, lockingElement As Object, leftPositionIndicator As Object, rightPositionIndicator As Object,
                        leftBranch As Object, rightBranch As Object, staticPlusPosition As Object, turnoutName As Object)
@@ -33,43 +53,66 @@
 
             TrailingAnimationTimer.Interval = 200
             TrailingAnimationTimer.Enabled = False
+
+            ForcedUnlockRouteAnimationTimer.Interval = 200
+            ForcedUnlockRouteAnimationTimer.Enabled = False
         End Sub
 
 #Region "Directions"
         Public Sub SetDirect()
+            Direction = Directions.Direct
+
             ' SetDirect settings.
-            LeftBranch.Fill = New SolidColorBrush(Colors.White)
+            If Not Me.IsBlockedAgainstRoutes() Then
+                LeftBranch.Fill = New SolidColorBrush(Colors.White)
+            Else
+                LeftBranch.Stroke = New SolidColorBrush(Colors.White)
+            End If
             LeftPositionIndicator.Visibility = Visibility.Collapsed
             If Not Me.IsRouteLocked() Then
                 LockingElement.Fill = New SolidColorBrush(Colors.White)
             End If
 
             ' Return from SetDeviated.
-            RightBranch.Fill = LeftPositionIndicator.Fill
+            If Not Me.IsBlockedAgainstRoutes() Then
+                RightBranch.Fill = LeftPositionIndicator.Fill
+            Else
+                RightBranch.Stroke = LeftPositionIndicator.Fill
+            End If
             RightPositionIndicator.Visibility = Visibility.Visible
         End Sub
 
         Public Sub SetDeviated()
+            Direction = Directions.Deviated
+
             ' SetDirect settings.
-            RightBranch.Fill = New SolidColorBrush(Colors.White)
+            If Not Me.IsBlockedAgainstRoutes() Then
+                RightBranch.Fill = New SolidColorBrush(Colors.White)
+            Else
+                RightBranch.Stroke = New SolidColorBrush(Colors.White)
+            End If
             RightPositionIndicator.Visibility = Visibility.Collapsed
             If Not Me.IsRouteLocked() Then
                 LockingElement.Fill = New SolidColorBrush(Colors.White)
             End If
 
             ' Return from SetDirect.
-            LeftBranch.Fill = LeftPositionIndicator.Fill
+            If Not Me.IsBlockedAgainstRoutes() Then
+                LeftBranch.Fill = LeftPositionIndicator.Fill
+            Else
+                LeftBranch.Stroke = LeftPositionIndicator.Fill
+            End If
             LeftPositionIndicator.Visibility = Visibility.Visible
         End Sub
 
         Public Sub ChangeDirection()
-            If Me.IsTurnoutDirectionBlocked() Then
+            If Me.IsTurnoutDirectionBlocked() Or Me.IsTrailingActive() Or IsAnyAnimationActive() Then
                 Return
             End If
 
-            If LeftPositionIndicator.Visibility = Visibility.Visible Then
+            If Direction = Directions.Deviated Then
                 SetDirect()
-            ElseIf RightPositionIndicator.Visibility = Visibility.Visible Then
+            Else
                 SetDeviated()
             End If
         End Sub
@@ -96,7 +139,14 @@
             ' Activate turnout name.
             TurnoutName.Foreground = New SolidColorBrush(Colors.White)
             ' Set route and direction.
-            Route.SetRoute(routeState)
+
+            ' For route, get the route and display the corresponding color,
+            ' but if BMZ active the M_1, M_2, M_3 segments will not be filled.
+            If Me.IsBlockedAgainstRoutes() Then
+                Route.SetRoute(routeState, True)
+            Else
+                Route.SetRoute(routeState)
+            End If
 
             ' Checks for the BMMZ if its active and set to deviated to keep it's direction.
             If Me.IsTurnoutDirectionBlocked() And LeftPositionIndicator.Visibility = Visibility.Visible Then
@@ -104,9 +154,26 @@
                 Return
             End If
 
-            ' Otherwise, it's set to direct so keep the direct direction.
-            SetDirect()
+            ' Checks for the BMZ if its active and set to deviated to keep it's direction.
+            If Me.IsBlockedAgainstRoutes() And LeftPositionIndicator.Visibility = Visibility.Visible Then
+                SetDeviated()
+                Return
+            End If
 
+            ' Checks for the MMZT if its active and set to deviated to keep it's direction.
+            If Me.IsTrailingActive() And Me.TrailingAnimationState = TrailingAnimationStates.Left Then
+                SetDeviated()
+                Return
+            End If
+
+            ' Checks if interlocking already running and direction is to deviated
+            If IsTurnoutFunctional() AndAlso Direction = Directions.Deviated Then
+                SetDeviated()
+            Else
+                SetDirect()
+            End If
+
+            ' If trailing and route changed, keep 
             If IsTrailingActive() Then
                 LeftPositionIndicator.Visibility = Visibility.Collapsed
                 RightPositionIndicator.Visibility = Visibility.Collapsed
@@ -121,8 +188,9 @@
             Route.SetRoute(Route.RouteStates.Inactive)
             LeftPositionIndicator.Visibility = Visibility.Visible
             RightPositionIndicator.Visibility = Visibility.Visible
-            ' Also disable previous lock-in route
+            ' Also disable previous actions.
             _isRouteLocked = False
+            _isBlockedAgainstRoutes = False
         End Sub
 
 #Region "Checkings"
@@ -143,7 +211,7 @@
         End Function
 
         Public Function IsTrailingActive() As Boolean
-            Return Me.TrailingAnimationTimer.Enabled = True
+            Return Me.TrailingAnimationTimer.Enabled
         End Function
 
         Public Function IsTurnoutDirectionBlocked() As Boolean
@@ -161,6 +229,22 @@
         Public Function IsRouteLocked() As Boolean
             Return _isRouteLocked
         End Function
+
+        Public Function IsBlockedAgainstRoutes() As Boolean
+            Return _isBlockedAgainstRoutes
+        End Function
+
+        Public Function IsForcedUnlockRouteActive() As Boolean
+            Return ForcedUnlockRouteAnimationTimer.Enabled
+        End Function
+
+        Public Function IsTurnoutFunctional() As Boolean
+            Return Not Route.RouteState = Route.RouteStates.Inactive
+        End Function
+
+        Public Function IsAnyAnimationActive() As Boolean
+            Return IsTrailingActive() Or IsForcedUnlockRouteActive()
+        End Function
 #End Region
 
         Private Sub ChangeVisibility(control As Object)
@@ -171,7 +255,7 @@
             control.Visibility = If(control.Visibility = Visibility.Visible, Visibility.Collapsed, Visibility.Visible)
         End Sub
 
-        Private WithEvents TrailingAnimationTimer As New System.Windows.Forms.Timer
+        Private WithEvents TrailingAnimationTimer As New Forms.Timer
         Private Sub TrailAnimation_TimerElapsed(sender As Object, e As EventArgs) Handles TrailingAnimationTimer.Tick
             Select Case Me.TrailingAnimationState
                 Case TrailingAnimationStates.Both
@@ -192,13 +276,45 @@
                 Case TrailingAnimationStates.Left
                     SetDeviated()
                 Case Else
+                    Me.Activate(Route.RouteState)
                     LeftPositionIndicator.Visibility = Visibility.Visible
                     RightPositionIndicator.Visibility = Visibility.Visible
                     Me.TrailingAnimationTimer.Enabled = True
             End Select
         End Sub
 
-        Private _isRouteLocked = False
+        Private WithEvents ForcedUnlockRouteAnimationTimer As New Forms.Timer
+        Private Sub ForcedUnlockRouteAnimation_TimerElapsed(sender As Object, e As EventArgs) Handles ForcedUnlockRouteAnimationTimer.Tick
+            If Me.ForcedUnlockRouteAnimationState = ForcedUnlockRouteAnimationStates.All Then
+                For i As Integer = 0 To 2
+                    ChangeVisibility(Route.TurnoutSegments(i))
+                Next
+
+                If Route.TurnoutSegments(0).Visibility = Visibility.Visible Then
+                    TurnoutName.Background = New SolidColorBrush(Colors.Red)
+                Else
+                    TurnoutName.Background = New SolidColorBrush(Colors.Transparent)
+                End If
+            End If
+        End Sub
+
+        Public Sub ForcedUnlockRouteAnimation(forcedUnlockRouteAnimationState As ForcedUnlockRouteAnimationStates)
+            Me.ForcedUnlockRouteAnimationState = forcedUnlockRouteAnimationState
+
+            Select Case forcedUnlockRouteAnimationState
+                Case ForcedUnlockRouteAnimationStates.Stopped
+                    ForcedUnlockRouteAnimationTimer.Enabled = False
+                    For i As Integer = 0 To 2
+                        Route.TurnoutSegments(i).Visibility = Visibility.Visible
+                    Next
+                    TurnoutName.Background = New SolidColorBrush(Colors.Transparent)
+                Case ForcedUnlockRouteAnimationStates.All
+                    ForcedUnlockRouteAnimationTimer.Enabled = True
+            End Select
+        End Sub
+
+#Region "Routes"
+        Private _isRouteLocked As Boolean = False
         Public Sub LockRoute()
             LockingElement.Fill = LeftPositionIndicator.Fill
             _isRouteLocked = True
@@ -208,5 +324,19 @@
             LockingElement.Fill = New SolidColorBrush(Colors.White)
             _isRouteLocked = False
         End Sub
+
+        Private _isBlockedAgainstRoutes As Boolean = False
+        Public Sub BlockAgainstRoutes()
+            _isBlockedAgainstRoutes = True
+            Me.Activate(Route.RouteState)
+        End Sub
+
+        Public Sub UnblockAgainstRoutes()
+            _isBlockedAgainstRoutes = False
+            Me.ForcedUnlockRouteAnimation(Turnout.ForcedUnlockRouteAnimationStates.Stopped)
+            Me.Activate(Route.RouteState)
+            Debug.WriteLine(Direction = Directions.Deviated)
+        End Sub
+#End Region
     End Class
 End Namespace
