@@ -4,9 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Proiect_Alstom"
+        xmlns:viewModels="clr-namespace:Proiect_Alstom.ViewModels"
         mc:Ignorable="d"
         Title="ALSTOM - Simulare Macaz" WindowStartupLocation="CenterScreen" WindowState="Maximized"
         MinWidth="900" MinHeight="450">
+    <Window.DataContext>
+        <viewModels:ProgramViewModel x:Name="Program"/>
+    </Window.DataContext>
     
     <!-- Main Grid -->
     <Grid>
@@ -78,17 +82,26 @@
                         <RowDefinition MaxHeight="60"/>
                     </Grid.RowDefinitions>
 
-                    <Button Grid.Row="0" Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content="MMZ"/>
-                    <Button Grid.Row="0" Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content="MFMZ"/>
-                    <Button Grid.Row="0" Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="MMZT"/>
+                    <Button Grid.Row="0" Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content="MMZ"
+                            Command="{Binding MMZBttnCommand}"/>
+                    <Button Grid.Row="0" Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content="MFMZ"
+                            Command="{Binding MFMZBttnCommand}"/>
+                    <Button Grid.Row="0" Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="MMZT"
+                            Command="{Binding MMZTBttnCommand}"/>
 
-                    <Button Grid.Row="1" Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content="BMMZ"/>
-                    <Button Grid.Row="1" Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content="DMMZ"/>
-                    <Button Grid.Row="1" Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="BMZ"/>
+                    <Button Grid.Row="1" Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content="BMMZ"
+                            Command="{Binding BMMZBttnCommand}"/>
+                    <Button Grid.Row="1" Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content="DMMZ"
+                            Command="{Binding DMMZBttnCommand}"/>
+                    <Button Grid.Row="1" Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="BMZ"
+                            Command="{Binding BMZBttnCommand}"/>
 
-                    <Button Grid.Row="2" Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content="DMZ"/>
-                    <Button Grid.Row="2" Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content="FDMZ"/>
-                    <Button Grid.Row="2" Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="AVG"/>
+                    <Button Grid.Row="2" Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content="DMZ"
+                            Command="{Binding DMZBttnCommand}"/>
+                    <Button Grid.Row="2" Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content="FDMZ"
+                            Command="{Binding FDMZBttnCommand}"/>
+                    <Button Grid.Row="2" Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="AVG"
+                            Command="{Binding AVGBttnCommand}"/>
                 </Grid>
                 
                 <!-- Routes Bttns Grid -->
@@ -102,25 +115,31 @@
                         <RowDefinition MaxHeight="60"/>
                     </Grid.RowDefinitions>
 
-                    <Button Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content="Occupied"/>
-                    <Button Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content="Traffic"/>
-                    <Button Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="Shunting"/>
+                    <Button Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content="Occupied"
+                            Command="{Binding OccupiedBttnCommand}"/>
+                    <Button Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content="Traffic"
+                            Command="{Binding TrafficBttnCommand}"/>
+                    <Button Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="Shunting"
+                            Command="{Binding ShuntingBttnCommand}"/>
                 </Grid>
 
                 <!-- Bottom Bttns Grid -->
                 <Grid Grid.Row="5">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width=".5*"/>
                         <ColumnDefinition/>
                         <ColumnDefinition/>
-                        <ColumnDefinition Width=".5*"/>
+                        <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition MaxHeight="60"/>
                     </Grid.RowDefinitions>
 
-                    <Button Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content=" Gauge Violation "/>
-                    <Button Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="Trailed"/>
+                    <Button Grid.Column="0" Margin="5" FontSize="12" FontWeight="SemiBold" Content=" Gauge Violation "
+                            Command="{Binding GaugeViolationBttnCommand}"/>
+                    <Button Grid.Column="1" Margin="5" FontSize="12" FontWeight="SemiBold" Content=" Lock-in Route "
+                            Command="{Binding LockinRouteBttnCommand}"/>
+                    <Button Grid.Column="2" Margin="5" FontSize="12" FontWeight="SemiBold" Content="Trailed"
+                            Command="{Binding TrailedBttnCommand}"/>
                 </Grid>
             </Grid>
 
