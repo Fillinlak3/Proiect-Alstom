@@ -6,6 +6,7 @@
     <RootNamespace>Proiect_Alstom</RootNamespace>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>True</UseWindowsForms>
+    <ApplicationIcon>Resources\Images\misc\Application_Logo.ico</ApplicationIcon>
   </PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -24,6 +25,10 @@
       <Guid>215d64d2-031c-33c7-96e3-61794cd1ee61</Guid>
     </COMReference>
   </ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="Resources\Images\misc\Application_Logo.ico" />
+	</ItemGroup>
 
   <ItemGroup>
     <Import Include="System.Windows" />
