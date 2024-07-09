@@ -138,6 +138,26 @@ Namespace ViewModels
                 _FDMZBttnCommand = value
             End Set
         End Property
+
+        Private _AVGBttnCommand As RelayCommand
+        Public Property AVGBttnCommand As RelayCommand
+            Get
+                Return _AVGBttnCommand
+            End Get
+            Private Set(value As RelayCommand)
+                _AVGBttnCommand = value
+            End Set
+        End Property
+
+        Private _gaugeViolationBttnCommand As RelayCommand
+        Public Property GaugeViolationBttnCommand As RelayCommand
+            Get
+                Return _gaugeViolationBttnCommand
+            End Get
+            Private Set(value As RelayCommand)
+                _gaugeViolationBttnCommand = value
+            End Set
+        End Property
 #End Region
 
         Public Sub New()
@@ -146,6 +166,7 @@ Namespace ViewModels
             _shuntingBttnCommand = New RelayCommand(AddressOf BttnShunting)
             _trailedBttnCommand = New RelayCommand(AddressOf BttnTrailed)
             _lockinRouteBttnCommand = New RelayCommand(AddressOf BttnLockinRoute)
+            _gaugeViolationBttnCommand = New RelayCommand(AddressOf BttnGaugeViolation)
 
             _MMZBttnCommand = New RelayCommand(AddressOf BttnMMZ)
             _MFMZBttnCommand = New RelayCommand(AddressOf BttnMFMZ)
@@ -155,6 +176,7 @@ Namespace ViewModels
             _BMZBttnCommand = New RelayCommand(AddressOf BttnBMZ)
             _DMZBttnCommand = New RelayCommand(AddressOf BttnDMZ)
             _FDMZBttnCommand = New RelayCommand(AddressOf BttnFDMZ)
+            _AVGBttnCommand = New RelayCommand(AddressOf BttnAVG)
         End Sub
 
         Public Sub Reset()
@@ -163,7 +185,8 @@ Namespace ViewModels
             _lockedInRoute = False
 
             Turnout.TrailingAnimation(Turnout.TrailingAnimationStates.Stopped)
-            Turnout.ForcedUnlockRouteAnimation(Turnout.ForcedUnlockRouteAnimationStates.Stopped)
+            Turnout.ForcedUnlockRouteAnimation(Turnout.AnimationStates.Stopped)
+            Turnout.GaugeViolationAnimation(Turnout.AnimationStates.Stopped)
             Turnout.Deactivate()
         End Sub
 
@@ -220,8 +243,8 @@ Namespace ViewModels
                 Return
             End If
 
-            If Turnout.IsBlockedAgainstRoutes() Then
-                MessageBox.Show("Cannot trail while locked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            If Turnout.IsAnyAnimationActive() Or Turnout.IsBlockedAgainstRoutes() Or Turnout.IsTurnoutDirectionBlocked() Then
+                MessageBox.Show("Another action is in progress.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
                 Return
             End If
 
@@ -255,7 +278,7 @@ Namespace ViewModels
             ElseIf _needToBeConfirmed = True Then
                 _needToBeConfirmed = False
                 Turnout.UnlockRoute()
-                Turnout.ForcedUnlockRouteAnimation(Turnout.ForcedUnlockRouteAnimationStates.Stopped)
+                Turnout.ForcedUnlockRouteAnimation(Turnout.AnimationStates.Stopped)
                 Return
             End If
 
@@ -386,13 +409,13 @@ Namespace ViewModels
                 Return
             End If
 
-            If Turnout.IsTrailingActive() Then
-                MessageBox.Show("Cannot block while trailing.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            If Turnout.IsBlockedAgainstRoutes() Then
+                MessageBox.Show("Already blocked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
                 Return
             End If
 
-            If Turnout.IsBlockedAgainstRoutes() Then
-                MessageBox.Show("Already blocked against routes.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+            If Turnout.IsAnyAnimationActive() Or Turnout.IsBlockedAgainstRoutes() Or Turnout.IsTurnoutDirectionBlocked() Then
+                MessageBox.Show("Another action is in progress.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
                 Return
             End If
 
@@ -410,6 +433,8 @@ Namespace ViewModels
                 Return
             End If
 
+            _needToBeConfirmed = False
+            _lockedInRoute = False
             Turnout.UnblockAgainstRoutes()
         End Sub
 
@@ -431,8 +456,41 @@ Namespace ViewModels
                 Return
             End If
 
-            Turnout.ForcedUnlockRouteAnimation(Turnout.ForcedUnlockRouteAnimationStates.All)
+            Turnout.ForcedUnlockRouteAnimation(Turnout.AnimationStates.Running)
             _lockedInRoute = True
+        End Sub
+
+        Private Sub BttnAVG(Optional parameter As Object = Nothing)
+            If IXLState = False Then
+                MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Not Turnout.IsGaugeViolationActive() Then
+                MessageBox.Show("Gauge violation not active.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            Turnout.GaugeViolationAnimation(Turnout.AnimationStates.Stopped)
+        End Sub
+
+        Private Sub BttnGaugeViolation(Optional parameter As Object = Nothing)
+            If IXLState = False Then
+                MessageBox.Show("Interlocking is INACTIVE", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Turnout.IsGaugeViolationActive() Then
+                MessageBox.Show("Gauge violation already set.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            If Turnout.IsAnyAnimationActive() Or Turnout.IsBlockedAgainstRoutes() Or Turnout.IsTurnoutDirectionBlocked() Then
+                MessageBox.Show("Another action is in progress.", "An error occured", MessageBoxButton.OK, MessageBoxImage.Error)
+                Return
+            End If
+
+            Turnout.GaugeViolationAnimation(Turnout.AnimationStates.Running)
         End Sub
     End Class
 End Namespace

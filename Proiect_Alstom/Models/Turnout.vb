@@ -33,11 +33,12 @@
         End Enum
         Private TrailingAnimationState As TrailingAnimationStates
 
-        Enum ForcedUnlockRouteAnimationStates
+        Enum AnimationStates
             Stopped
-            All
+            Running
         End Enum
-        Private ForcedUnlockRouteAnimationState As ForcedUnlockRouteAnimationStates
+        Private ForcedUnlockRouteAnimationState As AnimationStates
+        Private GaugeViolationAnimationState As AnimationStates
 
         Public Sub New(route As Route, lockingElement As Object, leftPositionIndicator As Object, rightPositionIndicator As Object,
                        leftBranch As Object, rightBranch As Object, staticPlusPosition As Object, turnoutName As Object)
@@ -56,6 +57,9 @@
 
             ForcedUnlockRouteAnimationTimer.Interval = 200
             ForcedUnlockRouteAnimationTimer.Enabled = False
+
+            GaugeViolationAnimationTimer.Interval = 200
+            GaugeViolationAnimationTimer.Enabled = False
         End Sub
 
 #Region "Directions"
@@ -242,8 +246,12 @@
             Return Not Route.RouteState = Route.RouteStates.Inactive
         End Function
 
+        Public Function IsGaugeViolationActive() As Boolean
+            Return GaugeViolationAnimationTimer.Enabled
+        End Function
+
         Public Function IsAnyAnimationActive() As Boolean
-            Return IsTrailingActive() Or IsForcedUnlockRouteActive()
+            Return IsTrailingActive() Or IsForcedUnlockRouteActive() Or IsGaugeViolationActive
         End Function
 #End Region
 
@@ -285,31 +293,68 @@
 
         Private WithEvents ForcedUnlockRouteAnimationTimer As New Forms.Timer
         Private Sub ForcedUnlockRouteAnimation_TimerElapsed(sender As Object, e As EventArgs) Handles ForcedUnlockRouteAnimationTimer.Tick
-            If Me.ForcedUnlockRouteAnimationState = ForcedUnlockRouteAnimationStates.All Then
-                For i As Integer = 0 To 2
-                    ChangeVisibility(Route.TurnoutSegments(i))
-                Next
+            If Me.ForcedUnlockRouteAnimationState = AnimationStates.Stopped Then
+                Return
+            End If
 
-                If Route.TurnoutSegments(0).Visibility = Visibility.Visible Then
-                    TurnoutName.Background = New SolidColorBrush(Colors.Red)
-                Else
-                    TurnoutName.Background = New SolidColorBrush(Colors.Transparent)
-                End If
+            For i As Integer = 0 To 2
+                ChangeVisibility(Route.TurnoutSegments(i))
+            Next
+
+            If Route.TurnoutSegments(0).Visibility = Visibility.Visible Then
+                TurnoutName.Background = New SolidColorBrush(Colors.Red)
+            Else
+                TurnoutName.Background = New SolidColorBrush(Colors.Transparent)
             End If
         End Sub
 
-        Public Sub ForcedUnlockRouteAnimation(forcedUnlockRouteAnimationState As ForcedUnlockRouteAnimationStates)
+        Public Sub ForcedUnlockRouteAnimation(forcedUnlockRouteAnimationState As AnimationStates)
             Me.ForcedUnlockRouteAnimationState = forcedUnlockRouteAnimationState
 
             Select Case forcedUnlockRouteAnimationState
-                Case ForcedUnlockRouteAnimationStates.Stopped
+                Case AnimationStates.Stopped
                     ForcedUnlockRouteAnimationTimer.Enabled = False
                     For i As Integer = 0 To 2
                         Route.TurnoutSegments(i).Visibility = Visibility.Visible
                     Next
                     TurnoutName.Background = New SolidColorBrush(Colors.Transparent)
-                Case ForcedUnlockRouteAnimationStates.All
+                Case AnimationStates.Running
                     ForcedUnlockRouteAnimationTimer.Enabled = True
+            End Select
+        End Sub
+
+        Private WithEvents GaugeViolationAnimationTimer As New Forms.Timer
+        Private Sub GaugeViolationAnimation_TimerElapsed(sender As Object, e As EventArgs) Handles GaugeViolationAnimationTimer.Tick
+            If Me.GaugeViolationAnimationState = AnimationStates.Stopped Then
+                Return
+            End If
+
+            Select Case Direction
+                Case Directions.Direct
+                    LeftBranch.Fill = New SolidColorBrush(Colors.Red)
+                    ChangeVisibility(LeftBranch)
+                Case Directions.Deviated
+                    RightBranch.Fill = New SolidColorBrush(Colors.Red)
+                    ChangeVisibility(RightBranch)
+            End Select
+        End Sub
+
+        Public Sub GaugeViolationAnimation(gaugeViolationAnimationState As AnimationStates)
+            Me.GaugeViolationAnimationState = gaugeViolationAnimationState
+
+            Select Case gaugeViolationAnimationState
+                Case AnimationStates.Stopped
+                    GaugeViolationAnimationTimer.Enabled = False
+
+                    If Direction = Directions.Direct Then
+                        LeftBranch.Fill = New SolidColorBrush(Colors.White)
+                        LeftBranch.Visibility = Visibility.Visible
+                    Else
+                        RightBranch.Fill = New SolidColorBrush(Colors.White)
+                        RightBranch.Visibility = Visibility.Visible
+                    End If
+                Case AnimationStates.Running
+                    GaugeViolationAnimationTimer.Enabled = True
             End Select
         End Sub
 
@@ -333,7 +378,7 @@
 
         Public Sub UnblockAgainstRoutes()
             _isBlockedAgainstRoutes = False
-            Me.ForcedUnlockRouteAnimation(Turnout.ForcedUnlockRouteAnimationStates.Stopped)
+            Me.ForcedUnlockRouteAnimation(AnimationStates.Stopped)
             Me.Activate(Route.RouteState)
             Debug.WriteLine(Direction = Directions.Deviated)
         End Sub
