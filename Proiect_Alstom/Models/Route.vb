@@ -1,4 +1,6 @@
-﻿Namespace Models
+﻿Imports Services.Logging
+
+Namespace Models
     Public Class Route
         Public ReadOnly TurnoutSegments As New List(Of Object)
         Private _routeState As RouteStates
@@ -40,18 +42,23 @@
             Select Case routeState
                 Case RouteStates.Inactive
                     SetRouteColor(Colors.Gray)
+                    Logger.LogInfo("Route/SetRoute", "Inactive route.")
                 Case RouteStates.DefaultRoute
                     SetRouteColor(Colors.Yellow)
                     strokeColor = Colors.Yellow
+                    Logger.LogInfo("Route/SetRoute", "Default route.")
                 Case RouteStates.Occupied
                     SetRouteColor(Colors.Red)
                     strokeColor = Colors.Red
+                    Logger.LogInfo("Route/SetRoute", "Occupied route.")
                 Case RouteStates.Traffic
                     SetRouteColor(Colors.Lime)
                     strokeColor = Colors.Lime
+                    Logger.LogInfo("Route/SetRoute", "Traffic route.")
                 Case RouteStates.Shunting
                     SetRouteColor(Colors.Blue)
                     strokeColor = Colors.Blue
+                    Logger.Log("Route/SetRoute", "Shunting route.")
             End Select
 
             ' Save routstate

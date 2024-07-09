@@ -285,6 +285,8 @@
                     SetDeviated()
                 Case Else
                     Me.Activate(Route.RouteState)
+                    ' Reset turnout direction to direct.
+                    SetDirect()
                     LeftPositionIndicator.Visibility = Visibility.Visible
                     RightPositionIndicator.Visibility = Visibility.Visible
                     Me.TrailingAnimationTimer.Enabled = True
